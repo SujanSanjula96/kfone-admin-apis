@@ -297,7 +297,10 @@ dependencies = [
 	{org = "ballerinai", name = "observe"}
 ]
 modules = [
-	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis"}
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis"},
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.config"},
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.dao"},
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.service"}
 ]
 
 
