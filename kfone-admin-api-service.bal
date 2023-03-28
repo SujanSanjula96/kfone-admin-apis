@@ -16,7 +16,7 @@ service / on httpListener {
     }
 
     resource function post devices(@http:Payload utils:Device payload) returns string { 
-        
+
         string id = uuid:createType1AsString();
         string response = dao:addDevice(
             id, 
