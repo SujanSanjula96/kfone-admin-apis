@@ -242,6 +242,9 @@ dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"}
 ]
+modules = [
+	{org = "ballerina", packageName = "os", moduleName = "os"}
+]
 
 [[package]]
 org = "ballerina"
@@ -290,18 +293,33 @@ modules = [
 ]
 
 [[package]]
+org = "ballerinax"
+name = "mongodb"
+version = "4.0.0"
+dependencies = [
+	{org = "ballerina", name = "crypto"},
+	{org = "ballerina", name = "jballerina.java"}
+]
+modules = [
+	{org = "ballerinax", packageName = "mongodb", moduleName = "mongodb"}
+]
+
+[[package]]
 org = "sujan"
 name = "kfone_admin_apis"
 version = "0.1.0"
 dependencies = [
 	{org = "ballerina", name = "http"},
-	{org = "ballerinai", name = "observe"}
+	{org = "ballerina", name = "os"},
+	{org = "ballerinai", name = "observe"},
+	{org = "ballerinax", name = "mongodb"}
 ]
 modules = [
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.config"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.dao"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.error"},
-	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.service"}
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.service"},
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.utils"}
 ]
 
