@@ -28,4 +28,33 @@ service / on httpListener {
         );
         return response;
     }
+
+    resource function get promos() returns utils:Promo[]|string { 
+
+        utils:Promo[]|string promos = dao:getPromos();
+        return promos;
+    }
+    
+    resource function post promos(@http:Payload utils:Promo payload) returns string { 
+
+        string id = uuid:createType1AsString();
+    
+        string response = dao:addPromo(
+            id,
+            payload.promoCode, 
+            payload.discount
+        );
+        return response;
+    }
+
+
+    resource function get promos/[string promoId]() returns utils:Promo|string|http:NotFound {
+        
+        return dao:getPromo(promoId);
+    }
+
+    resource function delete promos/[string promoId]() returns string|http:NoContent {
+        
+        return dao:deletePromo(promoId);
+    }
 }

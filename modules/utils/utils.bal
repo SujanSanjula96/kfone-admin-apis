@@ -1,3 +1,4 @@
+
 public type Device record {
     string id?;
     string name;
@@ -9,6 +10,7 @@ public type Device record {
 };
 
 public type Promo record {
+    string id?;
     string promoCode;
     float discount;
 };
