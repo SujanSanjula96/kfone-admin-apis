@@ -1,6 +1,7 @@
 import kfone_admin_apis.utils;
 import kfone_admin_apis.config;
 import ballerinax/mongodb;
+import ballerina/http;
 
 mongodb:ConnectionConfig mongoConfig = {
     connection: {
@@ -53,4 +54,75 @@ public function addDevice(string id, string name, string description, string cat
         return "Failed";
     }
     return "Success";
+}
+public function addPromo(string id, string promoCode, float discount) returns string {
+
+    map<json> promotion = {
+        id: id,
+        promoCode: promoCode,
+        discount: discount
+    };
+    mongodb:Error? result = checkpanic mongoClient->insert(promotion,"promotions");
+    if result is mongodb:Error {
+        return "Failed";
+    }
+    return "Success";
+}
+
+public function getPromos() returns utils:Promo[]|string {
+    stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), ());
+
+    if result is mongodb:Error {
+        return "Error";
+    }
+
+    utils:Promo[] promotionsList = [];
+    if result is stream<utils:Promo, error?> {
+        if result is stream<utils:Promo> {
+            foreach var item in result {
+                utils:Promo promotion = {
+                    id: item.id,
+                    promoCode: item.promoCode,
+                    discount: item.discount
+                };
+                promotionsList.push(promotion);
+            }
+        }
+    }
+    return promotionsList;
+}
+
+public function getPromo(string promoId) returns utils:Promo|string|http:NotFound {
+
+        stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), {id: promoId});
+
+    if result is mongodb:Error {
+        return "Error";
+    }
+    utils:Promo? promo = ();
+    if result is stream<utils:Promo, error?> {
+        if result is stream<utils:Promo> {
+            foreach var item in result {
+                promo = {
+                    id: item.id,
+                    promoCode: item.promoCode,
+                    discount: item.discount
+                };  
+            }
+        }
+    }
+
+    if promo is ()  {
+        return http:NOT_FOUND;
+    }
+    return promo;
+}
+
+public function deletePromo(string promoId) returns string|http:NoContent {
+
+    int|mongodb:Error result = checkpanic mongoClient->delete("promotions", (), {id: promoId});
+    if result is mongodb:Error {
+        return "Failed";
+    }
+    return http:NO_CONTENT;
 }

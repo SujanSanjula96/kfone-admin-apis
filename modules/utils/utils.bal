@@ -1,14 +1,16 @@
+
 public type Device record {
-    string id;
+    string id?;
     string name;
-    string? imageUrl;
+    string imageUrl?;
     float price;
-    string? description;
+    string description?;
     string category;
     Promo[]? promos;
 };
 
 public type Promo record {
+    string id?;
     string promoCode;
     float discount;
 };
