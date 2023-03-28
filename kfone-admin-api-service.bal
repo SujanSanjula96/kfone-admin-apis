@@ -48,7 +48,7 @@ service / on httpListener {
     }
 
 
-    resource function get promos/[string promoId]() returns utils:Promo|string|http:NotFound {
+    resource function get promos/[string promoId]() returns utils:Promo|http:NotFound|http:InternalServerError {
         
         return dao:getPromo(promoId);
     }
@@ -57,4 +57,13 @@ service / on httpListener {
         
         return dao:deletePromo(promoId);
     }
+
+     resource function patch devices/[string deviceId]/promos(@http:Payload string promoId) returns http:Ok|http:NotFound|http:InternalServerError {
+        
+        if (promoId == "") {
+            return dao:deletePromoFromProduct(deviceId);
+        }
+        return dao:addPromoToProduct(deviceId, promoId);
+    }
+
 }
