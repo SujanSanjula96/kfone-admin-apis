@@ -14,3 +14,9 @@ public type Promo record {
     string promoCode;
     float discount;
 };
+
+public type UpdatePromoInDevicesRequest record {
+
+    string addedPromoId;
+    string removedPromoId;
+};
