@@ -92,12 +92,12 @@ public function getPromos() returns utils:Promo[]|string {
     return promotionsList;
 }
 
-public function getPromo(string promoId) returns utils:Promo|string|http:NotFound {
+public function getPromo(string promoId) returns utils:Promo|http:NotFound|http:InternalServerError {
 
         stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), {id: promoId});
 
     if result is mongodb:Error {
-        return "Error";
+        return http:INTERNAL_SERVER_ERROR;
     }
     utils:Promo? promo = ();
     if result is stream<utils:Promo, error?> {
@@ -125,4 +125,38 @@ public function deletePromo(string promoId) returns string|http:NoContent {
         return "Failed";
     }
     return http:NO_CONTENT;
+}
+
+public function addPromoToProduct(string productId, string promoId) returns http:Ok|http:NotFound|http:InternalServerError {
+
+    utils:Promo|http:NotFound|http:InternalServerError promo = getPromo(promoId);
+    if promo is http:NotFound {
+        return http:NOT_FOUND;
+    }
+    else if promo is http:InternalServerError {
+        return http:INTERNAL_SERVER_ERROR;
+    }
+    else if promo is utils:Promo {
+
+        map<json> promotion = {
+            id: promo.id,
+            promoCode: promo.promoCode,
+            discount: promo.discount
+        };        
+
+        int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: promotion}}, "devicesTest1", (), {id: productId});
+        if result is mongodb:Error {
+            return http:INTERNAL_SERVER_ERROR;
+        }
+    }
+    return http:OK;
+}
+
+public function deletePromoFromProduct(string productId) returns http:Ok|http:InternalServerError {
+
+    int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: null}}, "devicesTest1", (), {id: productId});
+    if result is mongodb:Error {
+        return http:INTERNAL_SERVER_ERROR;
+    }
+    return http:OK;
 }
