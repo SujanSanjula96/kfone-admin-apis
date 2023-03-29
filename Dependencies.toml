@@ -340,10 +340,10 @@ dependencies = [
 ]
 modules = [
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis"},
+	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.api"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.config"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.dao"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.error"},
-	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.service"},
 	{org = "sujan", packageName = "kfone_admin_apis", moduleName = "kfone_admin_apis.utils"}
 ]
 

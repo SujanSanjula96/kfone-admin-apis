@@ -5,6 +5,7 @@ import ballerina/uuid;
 import ballerina/log;
 import kfone_admin_apis.config;
 import ballerina/mime;
+import kfone_admin_apis.api;
 
 listener http:Listener httpListener = new (9090);
 
@@ -160,6 +161,17 @@ service / on httpListener {
 
         if (response is http:Response) {
             string|error text = response.getTextPayload();
+            json|error userId = response.getJsonPayload();
+            if userId is error {
+                return userId.message();
+            }
+            json|error userIdJson = userId.id;
+            if userIdJson is error {
+                return userIdJson.message();
+            }
+            string userIdString = userIdJson.toString();
+
+            http:Response|string responseGroup = api:updateUserDetails(user.username, userIdString);
             if text is string {
                 return text;
             } else {
