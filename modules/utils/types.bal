@@ -26,4 +26,6 @@ public type UserPostModel record {
     string password;
     string givenName;
     string familyName;
+    string tier;
+    string tierPoints;
 };

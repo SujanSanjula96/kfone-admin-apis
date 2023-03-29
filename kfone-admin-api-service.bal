@@ -132,18 +132,27 @@ service / on httpListener {
         http:Response|error response = scimEndpoint->post(
             "/Users",
             {
+                "schemas": 
+                    [
+                        "urn:ietf:params:scim:schemas:core:2.0:User",
+                        "urn:scim:wso2:schema"
+                    ],
+                "name":{
+                    "familyName":user.familyName,
+                    "givenName":user.givenName
+                },
+                "password":user.password,
+                "userName": string `DEFAULT/${user.username}`,
                 "emails":[
                     {
                         "primary":true,
                         "value":user.username
                     }
                 ],
-                "name":{
-                    "familyName":user.familyName,
-                    "givenName":user.givenName
-                },
-                "password":user.password,
-                "userName": string `DEFAULT/${user.username}`
+                "urn:scim:wso2:schema": {
+                    "tier": user.tier,
+                    "tierPoints": user.tierPoints
+                }
             },
             {
                 "Authorization": string `Bearer ${accessToken}`,
