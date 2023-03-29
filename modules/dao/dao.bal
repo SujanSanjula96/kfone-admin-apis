@@ -11,11 +11,11 @@ mongodb:ConnectionConfig mongoConfig = {
 };
 mongodb:Client mongoClient = check new (mongoConfig);
 
-public function getDevices() returns utils:Device[]|string {
-    stream<utils:Device, error?>|mongodb:Error result = checkpanic mongoClient->find("devicesTest1", (), ());
+public function getDevices() returns utils:Device[]|http:InternalServerError {
+    stream<utils:Device, error?>|mongodb:Error result = checkpanic mongoClient->find("devicesTest", (), ());
 
     if result is mongodb:Error {
-        return "Error";
+        return http:INTERNAL_SERVER_ERROR;
     }
 
     utils:Device[] deviceList = [];
@@ -23,13 +23,13 @@ public function getDevices() returns utils:Device[]|string {
         if result is stream<utils:Device> {
             foreach var item in result {
                 utils:Device device = {
+                    name: item.name,
                     price: item.price,
                     imageUrl: item.imageUrl,
-                    name: item.name,
                     description: item.description,
                     id: item.id,
                     category: item.category,
-                    promos: item.promos
+                    promos: item?.promos
                 };
                 deviceList.push(device);
             }
@@ -38,24 +38,33 @@ public function getDevices() returns utils:Device[]|string {
     return deviceList;
 }
 
-public function addDevice(string id, string name, string description, string category, string imageUrl, float price) returns string {
+public function addDevice(string id, string name, string description, string category, string imageUrl, float price) returns http:Created|http:InternalServerError {
 
     map<json> device = {
+        id: id,
+        name: name,
         price: price,
         imageUrl: imageUrl,
-        name: name,
         description: description,
-        id: id,
         category: category,
-        promos: []
+        promos: null
     };
-    mongodb:Error? result = checkpanic mongoClient->insert(device,"devicesTest1");
+    mongodb:Error? result = checkpanic mongoClient->insert(device,"devicesTest");
     if result is mongodb:Error {
-        return "Failed";
+        return http:INTERNAL_SERVER_ERROR;
     }
-    return "Success";
+    return http:CREATED;
 }
-public function addPromo(string id, string promoCode, float discount) returns string {
+
+public function deleteDevice(string id) returns http:NoContent|http:InternalServerError {
+
+    int|mongodb:Error result = checkpanic mongoClient->delete("devicesTest", (), {id: id});
+    if result is mongodb:Error {
+        return http:INTERNAL_SERVER_ERROR;
+    }
+    return http:NO_CONTENT;
+}
+public function addPromo(string id, string promoCode, float discount) returns http:Created|http:InternalServerError {
 
     map<json> promotion = {
         id: id,
@@ -64,16 +73,16 @@ public function addPromo(string id, string promoCode, float discount) returns st
     };
     mongodb:Error? result = checkpanic mongoClient->insert(promotion,"promotions");
     if result is mongodb:Error {
-        return "Failed";
+        return http:INTERNAL_SERVER_ERROR;
     }
-    return "Success";
+    return http:CREATED;
 }
 
-public function getPromos() returns utils:Promo[]|string {
+public function getPromos() returns utils:Promo[]|http:InternalServerError {
     stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), ());
 
     if result is mongodb:Error {
-        return "Error";
+        return http:INTERNAL_SERVER_ERROR;
     }
 
     utils:Promo[] promotionsList = [];
@@ -118,11 +127,11 @@ public function getPromo(string promoId) returns utils:Promo|http:NotFound|http:
     return promo;
 }
 
-public function deletePromo(string promoId) returns string|http:NoContent {
+public function deletePromo(string promoId) returns http:InternalServerError|http:NoContent {
 
     int|mongodb:Error result = checkpanic mongoClient->delete("promotions", (), {id: promoId});
     if result is mongodb:Error {
-        return "Failed";
+        return http:INTERNAL_SERVER_ERROR;
     }
     return http:NO_CONTENT;
 }
@@ -144,7 +153,7 @@ public function addPromoToProduct(string productId, string promoId) returns http
             discount: promo.discount
         };        
 
-        int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: promotion}}, "devicesTest1", (), {id: productId});
+        int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: promotion}}, "devicesTest", (), {id: productId});
         if result is mongodb:Error {
             return http:INTERNAL_SERVER_ERROR;
         }
@@ -154,7 +163,7 @@ public function addPromoToProduct(string productId, string promoId) returns http
 
 public function deletePromoFromProduct(string productId) returns http:Ok|http:InternalServerError {
 
-    int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: null}}, "devicesTest1", (), {id: productId});
+    int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: null}}, "devicesTest", (), {id: productId});
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
