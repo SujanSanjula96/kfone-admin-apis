@@ -14,3 +14,10 @@ public type Promo record {
     string promoCode;
     float discount;
 };
+
+public type UserPostModel record {
+    string username;
+    string password;
+    string givenName;
+    string familyName;
+};
