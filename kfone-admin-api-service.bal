@@ -61,12 +61,21 @@ service / on httpListener {
         return dao:deletePromo(promoId);
     }
 
-     resource function patch devices/[string deviceId]/promos(@http:Payload string promoId) returns http:Ok|http:NotFound|http:InternalServerError {
+     resource function patch devices/[string deviceId]/promos(@http:Payload utils:UpdatePromoInDevicesRequest payload) returns http:Ok|http:NotFound|http:InternalServerError {
         
-        if (promoId == "") {
-            return dao:deletePromoFromProduct(deviceId);
+        string removedPromoId = payload.removedPromoId;
+        string addedPromoId = payload.addedPromoId;
+ 
+        if (removedPromoId != "") {
+            http:Ok|http:InternalServerError removePromoResponse = dao:deletePromoFromProduct(deviceId);
+            if !(removePromoResponse is http:Ok){
+                return removePromoResponse;
+            }
         }
-        return dao:addPromoToProduct(deviceId, promoId);
+        if (addedPromoId != "") {
+            return dao:addPromoToProduct(deviceId, addedPromoId);
+        }
+        return http:OK;
     }
 
     resource function get getUsers() returns http:Response|string {

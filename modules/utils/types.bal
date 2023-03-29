@@ -15,6 +15,12 @@ public type Promo record {
     float discount;
 };
 
+public type UpdatePromoInDevicesRequest record {
+
+    string addedPromoId;
+    string removedPromoId;
+};
+
 public type UserPostModel record {
     string username;
     string password;
