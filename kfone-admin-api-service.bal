@@ -92,7 +92,7 @@ service / on httpListener {
         log:printInfo("Client endpoint created");
 
         http:Response|error response = scimEndpoint->get(
-            "/Users",
+            "/Users?domain=DEFAULT&filter=groups+eq+Customer",
             {
                 "Authorization": string `Bearer ${accessToken}`,
                 "Accept": mime:APPLICATION_JSON
