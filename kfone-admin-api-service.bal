@@ -9,19 +9,19 @@ import ballerina/mime;
 listener http:Listener httpListener = new (9090);
 
 service / on httpListener {
-    resource function get devices() returns utils:Device[]|string { 
-        utils:Device[]|string devices = dao:getDevices();
-        return devices;
+    resource function get devices() returns utils:Device[]|http:InternalServerError { 
+
+        return dao:getDevices();
     }
 
     resource function get devices/[string deviceName]() returns string { 
         return deviceName; 
     }
 
-    resource function post devices(@http:Payload utils:Device payload) returns string { 
+    resource function post devices(@http:Payload utils:Device payload) returns http:Created|http:InternalServerError { 
 
         string id = uuid:createType1AsString();
-        string response = dao:addDevice(
+        return  dao:addDevice(
             id, 
             payload.name, 
             payload.description ?: "", 
@@ -29,34 +29,35 @@ service / on httpListener {
             payload.imageUrl ?: "",
             payload.price
         );
-        return response;
     }
 
-    resource function get promos() returns utils:Promo[]|string { 
+    resource function delete devices/[string deviceId]() returns http:NoContent|http:InternalServerError {
+        
+        return dao:deleteDevice(deviceId);
+    }
 
-        utils:Promo[]|string promos = dao:getPromos();
-        return promos;
+    resource function get promos() returns utils:Promo[]|http:InternalServerError { 
+
+        return dao:getPromos();
     }
     
-    resource function post promos(@http:Payload utils:Promo payload) returns string { 
+    resource function post promos(@http:Payload utils:Promo payload) returns http:Created|http:InternalServerError{ 
 
         string id = uuid:createType1AsString();
     
-        string response = dao:addPromo(
+        return dao:addPromo(
             id,
             payload.promoCode, 
             payload.discount
         );
-        return response;
     }
-
 
     resource function get promos/[string promoId]() returns utils:Promo|http:NotFound|http:InternalServerError {
         
         return dao:getPromo(promoId);
     }
 
-    resource function delete promos/[string promoId]() returns string|http:NoContent {
+    resource function delete promos/[string promoId]() returns http:NoContent|http:InternalServerError {
         
         return dao:deletePromo(promoId);
     }
@@ -65,15 +66,12 @@ service / on httpListener {
         
         string removedPromoId = payload.removedPromoId;
         string addedPromoId = payload.addedPromoId;
- 
-        if (removedPromoId != "") {
-            http:Ok|http:InternalServerError removePromoResponse = dao:deletePromoFromProduct(deviceId);
-            if !(removePromoResponse is http:Ok){
-                return removePromoResponse;
-            }
-        }
+
         if (addedPromoId != "") {
             return dao:addPromoToProduct(deviceId, addedPromoId);
+            }
+        if (removedPromoId != "") {
+            return dao:deletePromoFromProduct(deviceId);
         }
         return http:OK;
     }

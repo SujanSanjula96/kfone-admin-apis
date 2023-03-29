@@ -6,7 +6,7 @@ public type Device record {
     float price;
     string description?;
     string category;
-    Promo[]? promos;
+    Promo? promos?;
 };
 
 public type Promo record {
