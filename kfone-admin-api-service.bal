@@ -172,4 +172,54 @@ service / on httpListener {
             return response.message();
         }
     }
+    
+    resource function patch updateUser(@http:Payload utils:UserPatchModel user) returns http:Response|string {
+
+        string|error accessToken = utils:getAccessToken();
+        if accessToken is error {
+            return accessToken.message();
+        }
+
+        http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
+
+        if scimEndpoint is error {
+            return scimEndpoint.message();
+        }
+
+        log:printInfo("Client endpoint created");
+
+        http:Response|error response = scimEndpoint->patch(
+            string `/Users/${user.userId}`,
+            {
+                "Operations":[
+                    {
+                        "op":"replace",
+                        "value":{
+                            "urn:scim:wso2:schema":{
+                                "tierPoints":user.tierPoints,
+                                "tier":user.tier
+                            }
+                        }
+                    }
+                ],
+                "schemas":["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
+            },
+            {
+                "Authorization": string `Bearer ${accessToken}`,
+                "Accept": mime:APPLICATION_JSON
+            }
+        );
+
+        if (response is http:Response) {
+            string|error text = response.getTextPayload();
+            if text is string {
+                return text;
+            } else {
+                return text.message();
+            }
+            
+        } else {
+            return response.message();
+        }
+    }
 }

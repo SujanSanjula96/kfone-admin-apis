@@ -29,3 +29,9 @@ public type UserPostModel record {
     string tier;
     string tierPoints;
 };
+
+public type UserPatchModel record {
+    string userId;
+    string tier;
+    string tierPoints;
+};
