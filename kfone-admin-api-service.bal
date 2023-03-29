@@ -113,4 +113,54 @@ service / on httpListener {
             return response.message();
         }
     }
+
+    resource function post createUser(@http:Payload utils:UserPostModel user) returns http:Response|string {
+
+        string|error accessToken = utils:getAccessToken();
+        if accessToken is error {
+            return accessToken.message();
+        }
+
+        http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
+
+        if scimEndpoint is error {
+            return scimEndpoint.message();
+        }
+
+        log:printInfo("Client endpoint created");
+
+        http:Response|error response = scimEndpoint->post(
+            "/Users",
+            {
+                "emails":[
+                    {
+                        "primary":true,
+                        "value":user.username
+                    }
+                ],
+                "name":{
+                    "familyName":user.familyName,
+                    "givenName":user.givenName
+                },
+                "password":user.password,
+                "userName": string `DEFAULT/${user.username}`
+            },
+            {
+                "Authorization": string `Bearer ${accessToken}`,
+                "Accept": mime:APPLICATION_JSON
+            }
+        );
+
+        if (response is http:Response) {
+            string|error text = response.getTextPayload();
+            if text is string {
+                return text;
+            } else {
+                return text.message();
+            }
+            
+        } else {
+            return response.message();
+        }
+    }
 }

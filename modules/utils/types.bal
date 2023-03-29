@@ -20,3 +20,10 @@ public type UpdatePromoInDevicesRequest record {
     string addedPromoId;
     string removedPromoId;
 };
+
+public type UserPostModel record {
+    string username;
+    string password;
+    string givenName;
+    string familyName;
+};
