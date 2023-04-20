@@ -73,16 +73,28 @@ service / on httpListener {
 
     resource function get getUsers() returns http:Response|error {
 
-        return api:getUsers();
+        http:Response|error response = api:getUsers();
+        if (response is error) {
+            return error("Error while retrieving the users.", status = http:INTERNAL_SERVER_ERROR);
+        }
+        return response;
     }
 
     resource function post createUser(@http:Payload utils:UserPostModel user) returns http:Response|error {
 
-        return api:createUser(user);
+        http:Response|error response = api:createUser(user);
+        if (response is error) {
+            return error("Error while creating the user.", status = http:INTERNAL_SERVER_ERROR);
+        }
+        return response;
     }
     
     resource function patch updateUser(@http:Payload utils:UserPatchModel user) returns http:Response|error {
 
-        return api:updateUser(user);
+        http:Response|error response = api:updateUser(user);
+        if (response is error) {
+            return error("Error while updating the tier of the user.", status = http:INTERNAL_SERVER_ERROR);
+        }
+        return response;
     }
 }
