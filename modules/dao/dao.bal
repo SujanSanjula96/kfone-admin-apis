@@ -12,7 +12,8 @@ mongodb:ConnectionConfig mongoConfig = {
 mongodb:Client mongoClient = check new (mongoConfig);
 
 public function getDevices() returns utils:Device[]|http:InternalServerError {
-    stream<utils:Device, error?>|mongodb:Error result = checkpanic mongoClient->find("devicesTest", (), ());
+    
+    stream<utils:Device, error?>|mongodb:Error result = checkpanic mongoClient->find(utils:DEVICE_COLLECTION, (), ());
 
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
@@ -49,7 +50,7 @@ public function addDevice(string id, string name, string description, string cat
         category: category,
         promos: null
     };
-    mongodb:Error? result = checkpanic mongoClient->insert(device,"devicesTest");
+    mongodb:Error? result = checkpanic mongoClient->insert(device,utils:DEVICE_COLLECTION);
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
@@ -58,7 +59,7 @@ public function addDevice(string id, string name, string description, string cat
 
 public function deleteDevice(string id) returns http:NoContent|http:InternalServerError {
 
-    int|mongodb:Error result = checkpanic mongoClient->delete("devicesTest", (), {id: id});
+    int|mongodb:Error result = checkpanic mongoClient->delete(utils:DEVICE_COLLECTION, (), {id: id});
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
@@ -71,7 +72,7 @@ public function addPromo(string id, string promoCode, float discount) returns ht
         promoCode: promoCode,
         discount: discount
     };
-    mongodb:Error? result = checkpanic mongoClient->insert(promotion,"promotions");
+    mongodb:Error? result = checkpanic mongoClient->insert(promotion, utils:PROMOTION_COLLECTION);
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
@@ -79,7 +80,7 @@ public function addPromo(string id, string promoCode, float discount) returns ht
 }
 
 public function getPromos() returns utils:Promo[]|http:InternalServerError {
-    stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), ());
+    stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find(utils:PROMOTION_COLLECTION, (), ());
 
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
@@ -103,7 +104,7 @@ public function getPromos() returns utils:Promo[]|http:InternalServerError {
 
 public function getPromo(string promoId) returns utils:Promo|http:NotFound|http:InternalServerError {
 
-        stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find("promotions", (), {id: promoId});
+        stream<utils:Promo, error?>|mongodb:Error result = checkpanic mongoClient->find(utils:PROMOTION_COLLECTION, (), {id: promoId});
 
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
@@ -129,7 +130,7 @@ public function getPromo(string promoId) returns utils:Promo|http:NotFound|http:
 
 public function deletePromo(string promoId) returns http:InternalServerError|http:NoContent {
 
-    int|mongodb:Error result = checkpanic mongoClient->delete("promotions", (), {id: promoId});
+    int|mongodb:Error result = checkpanic mongoClient->delete(utils:PROMOTION_COLLECTION, (), {id: promoId});
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
@@ -153,7 +154,7 @@ public function addPromoToProduct(string productId, string promoId) returns http
             discount: promo.discount
         };        
 
-        int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: promotion}}, "devicesTest", (), {id: productId});
+        int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: promotion}}, utils:DEVICE_COLLECTION, (), {id: productId});
         if result is mongodb:Error {
             return http:INTERNAL_SERVER_ERROR;
         }
@@ -163,7 +164,7 @@ public function addPromoToProduct(string productId, string promoId) returns http
 
 public function deletePromoFromProduct(string productId) returns http:Ok|http:InternalServerError {
 
-    int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: null}}, "devicesTest", (), {id: productId});
+    int|mongodb:Error? result = checkpanic mongoClient->update({ "$set": { promos: null}}, utils:DEVICE_COLLECTION, (), {id: productId});
     if result is mongodb:Error {
         return http:INTERNAL_SERVER_ERROR;
     }
