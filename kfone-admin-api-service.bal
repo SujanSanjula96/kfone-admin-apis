@@ -71,17 +71,17 @@ service / on httpListener {
         return http:OK;
     }
 
-    resource function get getUsers() returns http:Response|string {
+    resource function get getUsers() returns http:Response|error {
 
         return api:getUsers();
     }
 
-    resource function post createUser(@http:Payload utils:UserPostModel user) returns http:Response|string {
+    resource function post createUser(@http:Payload utils:UserPostModel user) returns http:Response|error {
 
         return api:createUser(user);
     }
     
-    resource function patch updateUser(@http:Payload utils:UserPatchModel user) returns http:Response|string {
+    resource function patch updateUser(@http:Payload utils:UserPatchModel user) returns http:Response|error {
 
         return api:updateUser(user);
     }
