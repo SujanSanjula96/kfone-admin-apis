@@ -10,13 +10,10 @@ import kfone_admin_apis.api;
 listener http:Listener httpListener = new (9090);
 
 service / on httpListener {
+
     resource function get devices() returns utils:Device[]|http:InternalServerError { 
 
         return dao:getDevices();
-    }
-
-    resource function get devices/[string deviceName]() returns string { 
-        return deviceName; 
     }
 
     resource function post devices(@http:Payload utils:Device payload) returns http:Created|http:InternalServerError { 
@@ -63,7 +60,7 @@ service / on httpListener {
         return dao:deletePromo(promoId);
     }
 
-     resource function patch devices/[string deviceId]/promos(@http:Payload utils:UpdatePromoInDevicesRequest payload) returns http:Ok|http:NotFound|http:InternalServerError {
+    resource function patch devices/[string deviceId]/promos(@http:Payload utils:UpdatePromoInDevicesRequest payload) returns http:Ok|http:NotFound|http:InternalServerError {
         
         string removedPromoId = payload.removedPromoId;
         string addedPromoId = payload.addedPromoId;
@@ -93,7 +90,7 @@ service / on httpListener {
         log:printInfo("Client endpoint created");
 
         http:Response|error response = scimEndpoint->get(
-            "/Users?domain=DEFAULT&filter=groups+eq+Customer",
+            "/Users?domain=DEFAULT&filter=groups+eq+" + config:customerGroupName,
             {
                 "Authorization": string `Bearer ${accessToken}`,
                 "Accept": mime:APPLICATION_JSON
