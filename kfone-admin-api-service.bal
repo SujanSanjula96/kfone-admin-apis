@@ -2,9 +2,6 @@ import kfone_admin_apis.dao;
 import ballerina/http;
 import kfone_admin_apis.utils;
 import ballerina/uuid;
-import ballerina/log;
-import kfone_admin_apis.config;
-import ballerina/mime;
 import kfone_admin_apis.api;
 
 listener http:Listener httpListener = new (9090);
@@ -76,157 +73,16 @@ service / on httpListener {
 
     resource function get getUsers() returns http:Response|string {
 
-        string|error accessToken = utils:getAccessToken();
-        if accessToken is error {
-            return accessToken.message();
-        }
-
-        http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
-
-        if scimEndpoint is error {
-            return scimEndpoint.message();
-        }
-
-        log:printInfo("Client endpoint created");
-
-        http:Response|error response = scimEndpoint->get(
-            "/Users?domain=DEFAULT&filter=groups+eq+" + config:customerGroupName,
-            {
-                "Authorization": string `Bearer ${accessToken}`,
-                "Accept": mime:APPLICATION_JSON
-            }
-        );
-
-        if (response is http:Response) {
-            string|error text = response.getTextPayload();
-            if text is string {
-                return text;
-            } else {
-                return text.message();
-            }
-            
-        } else {
-            return response.message();
-        }
+        return api:getUsers();
     }
 
     resource function post createUser(@http:Payload utils:UserPostModel user) returns http:Response|string {
 
-        string|error accessToken = utils:getAccessToken();
-        if accessToken is error {
-            return accessToken.message();
-        }
-
-        http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
-
-        if scimEndpoint is error {
-            return scimEndpoint.message();
-        }
-
-        log:printInfo("Client endpoint created");
-
-        http:Response|error response = scimEndpoint->post(
-            "/Users",
-            {
-                "schemas": 
-                    [
-                        "urn:ietf:params:scim:schemas:core:2.0:User",
-                        "urn:scim:wso2:schema"
-                    ],
-                "name":{
-                    "familyName":user.familyName,
-                    "givenName":user.givenName
-                },
-                "password":user.password,
-                "userName": string `DEFAULT/${user.username}`,
-                "emails":[
-                    {
-                        "primary":true,
-                        "value":user.username
-                    }
-                ],
-                "urn:scim:wso2:schema": {
-                    "tier": user.tier,
-                    "tierPoints": user.tierPoints
-                }
-            },
-            {
-                "Authorization": string `Bearer ${accessToken}`,
-                "Accept": mime:APPLICATION_JSON
-            }
-        );
-
-        if (response is http:Response) {
-            string|error text = response.getTextPayload();
-            json|error userId = response.getJsonPayload();
-            if userId is error {
-                return userId.message();
-            }
-            json|error userIdJson = userId.id;
-            if userIdJson is error {
-                return userIdJson.message();
-            }
-            string userIdString = userIdJson.toString();
-
-            http:Response|string responseGroup = api:updateUserDetails(user.username, userIdString);
-            if text is string {
-                return text;
-            } else {
-                return text.message();
-            }
-            
-        } else {
-            return response.message();
-        }
+        return api:createUser(user);
     }
     
     resource function patch updateUser(@http:Payload utils:UserPatchModel user) returns http:Response|string {
 
-        string|error accessToken = utils:getAccessToken();
-        if accessToken is error {
-            return accessToken.message();
-        }
-
-        http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
-
-        if scimEndpoint is error {
-            return scimEndpoint.message();
-        }
-
-        log:printInfo("Client endpoint created");
-
-        http:Response|error response = scimEndpoint->patch(
-            string `/Users/${user.userId}`,
-            {
-                "Operations":[
-                    {
-                        "op":"replace",
-                        "value":{
-                            "urn:scim:wso2:schema":{
-                                "tierPoints":user.tierPoints,
-                                "tier":user.tier
-                            }
-                        }
-                    }
-                ],
-                "schemas":["urn:ietf:params:scim:api:messages:2.0:PatchOp"]
-            },
-            {
-                "Authorization": string `Bearer ${accessToken}`,
-                "Accept": mime:APPLICATION_JSON
-            }
-        );
-
-        if (response is http:Response) {
-            string|error text = response.getTextPayload();
-            if text is string {
-                return text;
-            } else {
-                return text.message();
-            }
-            
-        } else {
-            return response.message();
-        }
+        return api:updateUser(user);
     }
 }
