@@ -4,20 +4,18 @@ import kfone_admin_apis.config;
 import ballerina/log;
 import ballerina/mime;
 
-public function getUsers() returns http:Response|string {
+public function getUsers() returns http:Response|error {
 
     string|error accessToken = utils:getAccessToken();
     if accessToken is error {
-        return accessToken.message();
+        return accessToken;
     }
 
     http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
 
     if scimEndpoint is error {
-        return scimEndpoint.message();
+        return scimEndpoint;
     }
-
-    log:printInfo("Client endpoint created");
 
     http:Response|error response = scimEndpoint->get(
         "/Users?domain=DEFAULT&filter=groups+eq+" + config:customerGroupName,
@@ -27,33 +25,21 @@ public function getUsers() returns http:Response|string {
         }
     );
 
-    if (response is http:Response) {
-        string|error text = response.getTextPayload();
-        if text is string {
-            return text;
-        } else {
-            return text.message();
-        }
-        
-    } else {
-        return response.message();
-    }
+    return response;
 }
 
-public function createUser(utils:UserPostModel user) returns http:Response|string {
+public function createUser(utils:UserPostModel user) returns http:Response|error {
 
     string|error accessToken = utils:getAccessToken();
     if accessToken is error {
-        return accessToken.message();
+        return accessToken;
     }
 
     http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
 
     if scimEndpoint is error {
-        return scimEndpoint.message();
+        return scimEndpoint;
     }
-
-    log:printInfo("Client endpoint created");
 
     http:Response|error response = scimEndpoint->post(
         "/Users",
@@ -87,43 +73,38 @@ public function createUser(utils:UserPostModel user) returns http:Response|strin
     );
 
     if (response is http:Response) {
-        string|error text = response.getTextPayload();
-        json|error userId = response.getJsonPayload();
-        if userId is error {
-            return userId.message();
-        }
-        json|error userIdJson = userId.id;
-        if userIdJson is error {
-            return userIdJson.message();
-        }
-        string userIdString = userIdJson.toString();
 
-        http:Response|string responseGroup = addUserToCustomerGroup(user.username, userIdString);
-        if text is string {
-            return text;
-        } else {
-            return text.message();
+        if (response.statusCode != 201) {
+            return response;
         }
         
-    } else {
-        return response.message();
+        json|error responsePayload = response.getJsonPayload();
+        if responsePayload is error {
+            return responsePayload;
+        }
+        json|error userIdJson = responsePayload.id;
+        if userIdJson is error {
+            return userIdJson;
+        }
+        string userIdString = userIdJson.toString();
+        _ = addUserToCustomerGroup(user.username, userIdString);
     }
+
+    return response;
 }
 
-public function updateUser(utils:UserPatchModel user) returns http:Response|string {
+public function updateUser(utils:UserPatchModel user) returns http:Response|error {
 
     string|error accessToken = utils:getAccessToken();
     if accessToken is error {
-        return accessToken.message();
+        return accessToken;
     }
 
     http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
 
     if scimEndpoint is error {
-        return scimEndpoint.message();
+        return scimEndpoint;
     }
-
-    log:printInfo("Client endpoint created");
 
     http:Response|error response = scimEndpoint->patch(
         string `/Users/${user.userId}`,
@@ -147,33 +128,23 @@ public function updateUser(utils:UserPatchModel user) returns http:Response|stri
         }
     );
 
-    if (response is http:Response) {
-        string|error text = response.getTextPayload();
-        if text is string {
-            return text;
-        } else {
-            return text.message();
-        }
-        
-    } else {
-        return response.message();
-    }
+    return response;
 }
 
-function addUserToCustomerGroup(string userName, string userId) returns http:Response|string {
+function addUserToCustomerGroup(string userName, string userId) {
     
     string|error accessToken = utils:getAccessToken();
     if accessToken is error {
-        return accessToken.message();
+        log:printError(accessToken.message());
+        return;
     }
 
     http:Client|error scimEndpoint = new(config:scimEndpoint, httpVersion = http:HTTP_1_1);
 
     if scimEndpoint is error {
-        return scimEndpoint.message();
+        log:printError(scimEndpoint.message());
+        return;
     }
-
-    log:printInfo("Client endpoint created");
 
     http:Response|error response = scimEndpoint->patch(
         string `/Groups/${config:customerGroupId}`,
@@ -198,16 +169,4 @@ function addUserToCustomerGroup(string userName, string userId) returns http:Res
             "Accept": mime:APPLICATION_JSON
         }
     );
-
-    if (response is http:Response) {
-        string|error text = response.getTextPayload();
-        if text is string {
-            return text;
-        } else {
-            return text.message();
-        }
-        
-    } else {
-        return response.message();
-    }
 }
